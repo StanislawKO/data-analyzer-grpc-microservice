@@ -24,7 +24,23 @@ public class GRPCDataService extends DataServerGrpc.DataServerImplBase {
 
     @Override
     public StreamObserver<GRPCData> addStreamOfData(StreamObserver<Empty> responseObserver) {
-        return super.addStreamOfData(responseObserver);
+        return new StreamObserver<>() {
+            @Override
+            public void onNext(GRPCData grpcData) {
+                Data data = new Data(grpcData);
+                dataService.handle(data);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onNext(Empty.newBuilder().build());
+                responseObserver.onCompleted();
+            }
+        };
     }
 
 }
